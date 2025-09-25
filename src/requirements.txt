@@ -1,0 +1,8 @@
+pytesseract==0.3.13
+opencv-python==4.12.0.88
+fastapi==0.117.1
+uvicorn[standard]==0.34.3
+python-multipart==0.0.20
+pydantic-settings==2.10.1
+mistralai==1.9.10
+langchain-groq==0.3.8
