@@ -1,0 +1,21 @@
+services:
+  postgres:
+    image: postgres:latest
+    container_name: postgres
+    env_file:
+      - ./env/.env.postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - backend
+    restart: always
+
+
+networks:
+  backend:
+    driver: bridge
+
+volumes:
+  pgdata:
