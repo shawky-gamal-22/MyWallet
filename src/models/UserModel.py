@@ -1,5 +1,5 @@
 from .BaseDataModel import BaseDataModel
-from db_schemes import User
+from .db_schemes import User
 from sqlalchemy.future import select
 
 
@@ -45,13 +45,19 @@ class UserModel(BaseDataModel):
         :param password_hash: The hashed password of the new user.
         :return: The created user object.
         """
-        async with self.db_client() as session:
-            async with session.begin():
-                new_user = User(username=username, email=email, hashed_password=hashed_password)
-                session.add(new_user)
-            
-            await session.refresh(new_user)
-            return new_user
+        user_by_email = await self.get_user_by_email(email)
+        if user_by_email:
+            return None  # User with this email already exists
+        
+        else:
+
+            async with self.db_client() as session:
+                async with session.begin():
+                    new_user = User(username=username, email=email, hashed_password=hashed_password)
+                    session.add(new_user)
+                
+                await session.refresh(new_user)
+                return new_user
         
     async def get_user_by_email(self, email: str):
         """
