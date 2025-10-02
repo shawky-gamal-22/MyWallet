@@ -4,6 +4,7 @@ from sqlalchemy.future import select
 from datetime import datetime
 from sqlalchemy import func
 from sqlalchemy.future import select
+from datetime import timedelta, timezone
 
 
 class InvoiceModel(BaseDataModel):
@@ -29,6 +30,7 @@ class InvoiceModel(BaseDataModel):
     async def create_invoice(self,
                              user_id: int,
                              category_id: int,
+                             invoice_name: str,
                              total_price: float,
                              description: str = None,
                              img_path: str = None) -> Invoice:
@@ -47,6 +49,7 @@ class InvoiceModel(BaseDataModel):
                 new_invoice = Invoice(
                     user_id=user_id,
                     category_id=category_id,
+                    invoice_name=invoice_name,
                     total_price=total_price,
                     description=description,
                     img_path=img_path
@@ -136,11 +139,12 @@ class InvoiceModel(BaseDataModel):
         :param end_date: The end date of the range.
         :return: A list of Invoice objects within the date range.
         """
+        end_at = end_date + timedelta(days=1)
         async with self.db_client() as session:
             stmt = select(Invoice).where(
                 Invoice.user_id == user_id,
                 Invoice.created_at >= start_date,
-                Invoice.created_at <= end_date
+                Invoice.created_at < end_at  # less than next day
             )
             result = await session.execute(stmt)
             invoices = result.scalars().all()
@@ -155,11 +159,12 @@ class InvoiceModel(BaseDataModel):
         :param end_date: The end date of the range.
         :return: The total amount spent as a float.
         """
+        end_at = end_date + timedelta(days=1)
         async with self.db_client() as session:
             stmt = select(func.sum(Invoice.total_price)).where(
                 Invoice.user_id == user_id,
                 Invoice.created_at >= start_date,
-                Invoice.created_at <= end_date
+                Invoice.created_at < end_at
             )
             result = await session.execute(stmt)
             total_spent = result.scalar() or 0.0
