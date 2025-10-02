@@ -106,6 +106,7 @@ async def get_invoices_by_date_range(request: Request, user_id: int, date_range:
                 "invoice_id": invoice.id,
                 "user_id": invoice.user_id,
                 "category_id": invoice.category_id,
+                "invoice_name": invoice.invoice_name,
                 "total_price": invoice.total_price,
                 "description": invoice.description,
                 "img_path": invoice.img_path,
@@ -117,6 +118,36 @@ async def get_invoices_by_date_range(request: Request, user_id: int, date_range:
             "status": ResponseStatus.GET_INVOICES_FOR_USER_SUCCESS_IN_RANGE_DATE.value,
             "data": invoice_list
         }
+    except Exception as e:
+        return {
+            "status": ResponseStatus.ERROR.value,
+            "message": str(e)
+        }
+    
+
+@invoice_router.post("/delete_invoice/{invoice_id}")
+async def delete_invoice(request: Request, invoice_id: int):
+    """
+    Endpoint to delete an invoice by its ID.
+    :param request: FastAPI Request object to access app state.
+    :param invoice_id: ID of the invoice to be deleted.
+    :return: JSON response indicating success or failure of the deletion.
+    """
+    db_client = request.app.db_client
+    invoice_model = await InvoiceModel.create_instance(db_client)
+
+    try:
+        success = await invoice_model.delete_invoice(invoice_id)
+        if success:
+            return {
+                "status": ResponseStatus.DELETE_INVOICE_SUCCESS.value,
+                "message": f"Invoice with ID {invoice_id} deleted successfully."
+            }
+        else:
+            return {
+                "status": ResponseStatus.ERROR.value,
+                "message": f"Invoice with ID {invoice_id} not found."
+            }
     except Exception as e:
         return {
             "status": ResponseStatus.ERROR.value,
