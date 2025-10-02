@@ -1,5 +1,12 @@
+assets/images/
+
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
+controls/__pycache__/
+models/__pycache__/
+stores/__pycache__/
+views/__pycache__/
 *.py[codz]
 *$py.class
 
