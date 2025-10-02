@@ -10,7 +10,11 @@ class MistralOCR:
         self.api_key = self.settings.MISTRAL_API_KEY
         self.client = Mistral(api_key=self.api_key)
 
-    def read_image(self, image_bytes: bytes) -> str:
+    @classmethod
+    async def create_instance(cls):
+        return cls()
+
+    async def read_image(self, image_bytes: bytes) -> str:
         b64 = base64.b64encode(image_bytes).decode('utf-8')
 
         resp = self.client.ocr.process(
