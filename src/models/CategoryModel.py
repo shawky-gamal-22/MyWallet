@@ -57,19 +57,20 @@ class CategoryModel(BaseDataModel):
         async with self.db_client() as session:        
             stmt = select(Category).where(Category.id == category_id)
             result = await session.execute(stmt)
-            category = result.scalars.first()
-            return category
+            category = result.scalars().first()
+            category_name = category.name if category else "Unknown"
+            return category_name
         
-    async def get_all_categories(self, skip: int= 0, limit: int = 10):
+    async def get_all_categories(self, page_no: int= 1, page_size: int = 10):
         """
         Get all categories from the database
 
         :return: all the categories
         """
         async with self.db_client() as session:
-            stmt = select(Category).offset(skip).limit(limit)
+            stmt = select(Category).offset((page_no-1)*page_size).limit(page_size)
             result = await session.execute(stmt)
-            categories = result.scalars.all()
+            categories = result.scalars().all()
             return categories
         
     async def update_category(self, category_id: int, 
