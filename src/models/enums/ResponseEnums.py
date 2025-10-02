@@ -14,3 +14,6 @@ class ResponseStatus(Enum):
     INVOICE_NOT_FOUND = "invoice not found"
     GET_INVOICES_FOR_USER_SUCCESS = "invoices for user retrieved successfully"
     GET_INVOICES_FOR_USER_SUCCESS_IN_RANGE_DATE = "invoices for user in range date retrieved successfully"
+    GET_ALL_CATEGORIES_SUCCESS = "all categories retrieved successfully"
+    INVOICE_CANNOT_BE_ADDED = "invoice cannot be added"
+    INVOICE_ADDED_SUCCESSFULLY = "invoice added successfully"
