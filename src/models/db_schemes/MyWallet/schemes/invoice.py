@@ -10,6 +10,7 @@ class Invoice(SQLAlchemyBase):
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     category_id = Column(Integer, ForeignKey("categories.id"), nullable=False)
+    invoice_name = Column(String, nullable=False)
     total_price = Column(Float, nullable=False)
     description = Column(String, nullable=True)
     created_at = Column(DateTime(timezone=True),server_default=func.now(), nullable=False)
@@ -25,4 +26,5 @@ class Invoice(SQLAlchemyBase):
         Index('idx_category_created_at', 'category_id', 'created_at'),
         Index('idx_user_id', 'user_id'),
         Index('idx_created_at', 'created_at'),
+        Index('idx_invoice_name', 'invoice_name'),
     )
