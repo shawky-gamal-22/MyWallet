@@ -33,10 +33,10 @@ async def extract_tabular_data( request: Request, file: UploadFile = File(...)):
 
 
         new_invoice = await invoice_model.create_invoice(
-            user_id=extracted_row['user_id'],
-            category_id=extracted_row['category_id'],
+            user_id=int(extracted_row['user_id']),
+            category_id=int(extracted_row['category_id']),
             invoice_name=extracted_row['invoice_name'],
-            total_price=extracted_row['total_price'],
+            total_price=float(extracted_row['total_price']),
             description=extracted_row['description'],
             img_path=str(img_path)
             )
@@ -55,9 +55,11 @@ async def extract_tabular_data( request: Request, file: UploadFile = File(...)):
                 "invoice_name": new_invoice.invoice_name,
                 "total_price": new_invoice.total_price,
                 "description": new_invoice.description,
-                "file_path": new_invoice.img_path
+                "img_path": new_invoice.img_path
             }
         }
+
+        
     except Exception as e:
         print(f"Error in /extract-tabular-data/: {e}")
         return {

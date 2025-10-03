@@ -10,3 +10,4 @@ SQLAlchemy==2.0.41
 asyncpg==0.30.0
 alembic==1.16.4
 psycopg2==2.9.10
+pdf2image==1.17.0

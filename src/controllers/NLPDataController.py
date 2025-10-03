@@ -7,6 +7,9 @@ import json
 from models import InvoiceModel, CategoryModel
 from datetime import datetime, timezone
 import logging
+import cv2
+import numpy as np
+from pdf2image import convert_from_bytes
 
 logger = logging.getLogger(__name__)
 
@@ -22,14 +25,34 @@ class NLPDataController(BaseController):
     async def create_instance(cls, db_client):
         return cls(db_client)
 
-    async def extract_row_data(self, image_bytes: bytes):
-
+    async def extract_row_data(self, file_bytes: bytes):
         ocr = await MistralOCR.create_instance()
-        
-        
 
-        extracted_text = await ocr.read_image(image_bytes)
+        # Try decode as image
+        np_arr = np.frombuffer(file_bytes, np.uint8)
+        image = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)
 
+        # If it's not an image, maybe it's a PDF
+        if image is None:
+            try:
+                pages = convert_from_bytes(file_bytes)
+                # Take first page
+                image = np.array(pages[0])
+            except Exception as e:
+                logger.error(f"File is not an image or valid PDF: {e}")
+                raise ValueError("Unsupported file type")
+
+        # Continue preprocessing
+        image = cv2.resize(image, None, fx=0.5, fy=0.5, interpolation=cv2.INTER_CUBIC)
+        gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+        adaptive_thresh = cv2.adaptiveThreshold(
+            gray_image, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
+            cv2.THRESH_BINARY, 11, 2
+        )
+        _, buffer = cv2.imencode(".png", adaptive_thresh)
+        image_bytes_ready = buffer.tobytes()
+
+        extracted_text = await ocr.read_image(image_bytes_ready)
         return extracted_text
     
     async def list_categories(self):
