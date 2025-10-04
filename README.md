@@ -112,6 +112,86 @@ Response:
 }
 ```
 
+
+## ✨ Current Progress
+
+- ✅ **Invoice Upload & OCR Extraction**  
+  Successfully implemented the invoice upload feature using **Mistral OCR**, which extracts text from images and passes it to an **LLM** that structures the data (amount, date, category, etc.).  
+  Extracted data is stored directly in a **PostgreSQL** database using **SQLAlchemy (async)**.
+
+- ✅ **Summarization by Date Range**  
+  Added a route to generate summaries for a given period (`start_date`, `end_date`), displaying:  
+  - Total amount spent  
+  - Spending categories  
+  - Purchase locations  
+  This enables users to easily track their expenses across any time range.
+ 
+
+
+## 🚀 Roadmap(Future Work)
+
+### 💰 Income & Balance Tracking
+- Add support for multiple **income sources** (salary, freelance, etc.).  
+- Implement **current balance calculation** = total income − total expenses.  
+- Keep a **historical balance record** for financial trend tracking.  
+
+---
+
+### 🧾 Advanced Invoice Management
+- Support multiple **invoice types** (shopping, utilities, groceries, etc.).  
+- Enable **batch invoice uploads** for faster processing.  
+- Improve **OCR accuracy** using advanced or fine-tuned models.  
+- Add **auto-categorization** of invoices using LLM-based content understanding.  
+
+---
+
+### 📊 Analytics & Insights
+- Build an **analytics dashboard** with:  
+  - Total spending by category.  
+  - Month-over-month expense comparisons.  
+  - Most frequent spending locations.  
+- Implement **spending pattern detection** and **budget alerts**.  
+- Provide **smart saving recommendations** based on user behavior.  
+
+---
+
+### 🧠 Multi-Agent Financial Assistant
+- Introduce a **multi-agent system** to plan and manage financial goals.  
+  - Example: A “Travel Planner” agent that calculates required savings for a trip.  
+  - Another agent monitors weekly spending and suggests optimizations.  
+- Allow agents to **collaborate** to keep users on track financially.  
+
+---
+
+### 🪙 Financial Goals Management
+- Add a feature for users to **set and track financial goals** (e.g., “Save EGP 5000 in 3 months”).  
+- Visualize progress and integrate with spending analysis.  
+
+---
+
+### 🧑‍💻 User Interface / Dashboard
+- Develop a **modern web or mobile dashboard** (React / Flutter).  
+- Include **interactive charts, filters, and invoice upload tools**.  
+- Provide a **clean and intuitive UX** for managing finances.  
+
+---
+
+### ☁️ Cloud & Scalability
+- Store images on **cloud storage** (AWS S3 / Google Cloud).  
+- Add **JWT authentication** for secure user access.  
+- Support **multi-user environments** with isolated data.  
+- Deploy using **Docker** and cloud platforms (Render, Railway, AWS).  
+
+---
+
+### 📤 Reports & Exports
+- Allow users to **export summaries** as **PDF or Excel reports**.  
+- Enable **automated weekly or monthly email reports**.  
+
+---
+
+
+
 ## Installation & Setup
 1. Clone repository:
 
@@ -142,12 +222,6 @@ pip install -r requirements.txt
 uvicorn main:app --reload 
 ```
 
-## 📅 Roadmap(Future Work)
-* Add income sources & balance tracking
-* Export reports (Excel, PDF)
-* Charts for visualization
-* User dashboard (Frontend with React)
-* Cloud storage support for images (S3, GCS)
 
 
 ## Contributing 🤝
