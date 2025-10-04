@@ -12,3 +12,4 @@ class User(SQLAlchemyBase):
     hashed_password = Column(String, nullable=False)
 
     invoices = relationship("Invoice", back_populates="user")
+    incomes = relationship("Income", back_populates="user")
