@@ -1,1 +1,1 @@
-from .MyWallet.schemes import User, Category, Invoice
+from .MyWallet.schemes import User, Category, Invoice, Income, IncomeCategory
