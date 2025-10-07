@@ -26,7 +26,7 @@ class IncomeModel(BaseDataModel):
         Asynchronous factory method to create an instance of IncomeModel.
 
         :param db_client: The database client/session maker.
-        :return: An instance of UserModel.
+        :return: An instance of IncomeModel.
         """
         return cls(db_client)
     
