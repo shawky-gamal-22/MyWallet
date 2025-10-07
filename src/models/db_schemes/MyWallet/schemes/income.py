@@ -26,3 +26,13 @@ class Income(SQLAlchemyBase):
 
     user = relationship("User", back_populates="incomes")
     category = relationship("IncomeCategory", back_populates="incomes")
+
+
+
+
+    __table_args__ = (
+        Index("idx_incomes_user_id", 'user_id'),
+        Index("idx_incmoes_user_id_category_id", "user_id", "category_id"),
+        Index("idx_incomes_created_at", 'created_at'),
+        Index("idx_incomes_is_recurring", 'is_recurring')
+    )
