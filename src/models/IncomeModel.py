@@ -64,7 +64,7 @@ class IncomeModel(BaseDataModel):
     async def get_all_incomes_for_a_user(self, user_id:int, page_no:int = 1, page_size: int = 10):
         async with self.db_client() as session:
             stmt = select(Income).where(Income.user_id == user_id).offset((page_no-1)*page_size).limit(page_size)
-            result = session.execute(stmt)
+            result = await session.execute(stmt)
             result = result.scalars().all()
             return result
         
@@ -72,7 +72,7 @@ class IncomeModel(BaseDataModel):
     async def get_income_by_id(self, user_id:int , income_id:int):
         async with self.db_client() as session:
             stmt = select(Income).where(Income.id == income_id, Income.user_id == user_id)
-            result = session.execute(stmt)
+            result = await session.execute(stmt)
             result = result.scalar_one_or_none()
 
             return result
@@ -84,12 +84,15 @@ class IncomeModel(BaseDataModel):
         if not income:
             return None
         
-        for key, value in updated_data.items():
-            setattr(income, key, value)
+        async with self.db_client() as session:
+            async with session.begin():
+        
+                for key, value in updated_data.items():
+                    setattr(income, key, value)
+                session.add(income)
 
-        await self.db_client().commit()
-        await self.db_client().refresh(income)
-        return income
+            await session.refresh(income)
+            return income
     
     async def delete_income(self, income_id: int, user_id: int):
 
@@ -101,5 +104,57 @@ class IncomeModel(BaseDataModel):
                     session.delete(income)
         
         return income
-                
+
+
+    async def get_total_income_by_date_range(self, user_id:int, start_date:datetime, end_date: datetime):
+        end_at = end_date + timedelta(days=1)
+
+        async with self.db_client() as session:
+            stmt = select(func.sum(Income.amount)).where(
+                Income.user_id == user_id,
+                Income.created_at >= start_date,
+                Income.created_at < end_at  # less than next day
+            )
+
+            result = await session.execute(stmt).scalar()
+
+            return result or 0.0
+        
+    async def get_incomes_by_category(self, user_id: int , category_id:int):
+        async with self.db_client() as session:
+            stmt = select(Income).where(
+                Income.user_id == user_id,
+                Income.category_id == category_id
+            )
+            results = await session.execute(stmt).scalars().all()
+
+            return results
+        
+    async def get_recurring_incomes_due_today(self, user_id:int):
+        today = date.today()
+
+        async with self.db_client() as session:
+            stmt = select(Income).where(
+                Income.user_id == user_id,
+                Income.is_recurring == True,
+                Income.next_due_date <= today
+            )
+
+            result = await session.execute(stmt).scalars().all()
+
+            return result
+        
+    async def update_next_due_date(self, user_id: int ,income_id: int , next_date: date):
+        result = await self.get_income_by_id(user_id= user_id, income_id= income_id)
+
+        if not result :
+            return None
+        
+        result.next_due_date = next_date
+
+        await self.db_client().commit()
+        await self.db_client().refresh(result)
+        return result
+    
+
     
