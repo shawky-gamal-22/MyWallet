@@ -17,3 +17,5 @@ class ResponseStatus(Enum):
     GET_ALL_CATEGORIES_SUCCESS = "all categories retrieved successfully"
     INVOICE_CANNOT_BE_ADDED = "invoice cannot be added"
     INVOICE_ADDED_SUCCESSFULLY = "invoice added successfully"
+    FAILED_ADDED_NEW_INCOME = "failed while adding new income"
+    ADDED_NEW_INCOME_SUCCESSFULLY = "added the new income successfully"
