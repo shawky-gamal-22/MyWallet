@@ -89,3 +89,13 @@ class IncomeCategoryModel(BaseDataModel):
                 session.delete(category)
             
         return category
+    
+    async def get_category_id_by_name(self, category_name: str):
+
+        async with self.db_client() as session:
+            stmt = select(IncomeCategory).where(IncomeCategory.name == category_name)
+            result = session.execute(stmt) 
+            result = result.scalar_one_or_none()
+            category_id = result.id
+
+            return category_id
