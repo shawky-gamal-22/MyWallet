@@ -101,7 +101,7 @@ class IncomeModel(BaseDataModel):
         if income:
             async with self.db_client() as session:
                 async with session.begin():
-                    session.delete(income)
+                    await session.delete(income)
         
         return income
 
