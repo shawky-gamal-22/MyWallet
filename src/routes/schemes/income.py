@@ -10,3 +10,6 @@ class IncomeRequest(BaseModel):
     description: str | None = None
     recurrence_interval: str | None = None
     next_due_date: str | None = None
+
+class DeleteRequest(BaseModel):
+    income_id: int
