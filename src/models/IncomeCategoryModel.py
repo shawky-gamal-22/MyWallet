@@ -94,7 +94,7 @@ class IncomeCategoryModel(BaseDataModel):
 
         async with self.db_client() as session:
             stmt = select(IncomeCategory).where(IncomeCategory.name == category_name)
-            result = session.execute(stmt) 
+            result = await session.execute(stmt) 
             result = result.scalar_one_or_none()
             category_id = result.id
 
