@@ -57,6 +57,21 @@ class IncomeController(BaseController):
         return new_income
 
 
+    async def delete_income_by_id(self, user_id: int , income_id: int):
+
+        income_model_object = await IncomeModel.create_instance(db_client= self.db_client)
+
+        deleted_income = await income_model_object.delete_income(
+            user_id= user_id,
+            income_id= income_id
+        )
+
+        if not deleted_income:
+            return None
+
+        return deleted_income
+
+
         
 
 
