@@ -19,3 +19,7 @@ class ResponseStatus(Enum):
     INVOICE_ADDED_SUCCESSFULLY = "invoice added successfully"
     FAILED_ADDED_NEW_INCOME = "failed while adding new income"
     ADDED_NEW_INCOME_SUCCESSFULLY = "added the new income successfully"
+    FAILED_TO_ADD_NEW_INCOME_CATEGORY = "failed to add new income category"
+    ADDED_NEW_INCOME_CATEGORY_SUCCESSFULLY = "added new income category successfully"
+    CAN_NOT_DELETED_THE_INCOME = "can not deleted this income"
+    DELETED_INCOME_SUCCESSFULLY = "deleted income successfully"
