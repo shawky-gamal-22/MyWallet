@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from routes import base, data, nlp_data, user, category, invoice
+from routes import base, data, nlp_data, user, category, invoice, income_category, income
 from contextlib import asynccontextmanager
 from helpers.config import get_settings
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
@@ -30,3 +30,5 @@ app.include_router(nlp_data.nlp_data_router)
 app.include_router(user.user_router)
 app.include_router(category.category_router)
 app.include_router(invoice.invoice_router)
+app.include_router(income.income_router)
+app.include_router(income_category.income_category_router)
