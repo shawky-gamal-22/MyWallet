@@ -23,3 +23,5 @@ class ResponseStatus(Enum):
     ADDED_NEW_INCOME_CATEGORY_SUCCESSFULLY = "added new income category successfully"
     CAN_NOT_DELETED_THE_INCOME = "can not deleted this income"
     DELETED_INCOME_SUCCESSFULLY = "deleted income successfully"
+    INCOME_ID_DOES_NOT_EXISTS = "income_id does not exists"
+    UPDATED_INCOME_SUCCESSFULLY = "updated income successfully"
