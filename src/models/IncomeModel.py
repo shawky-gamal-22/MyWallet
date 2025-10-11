@@ -77,7 +77,7 @@ class IncomeModel(BaseDataModel):
 
             return result
         
-    async def update_income(self, income_id, user_id:int, updated_data: dict):
+    async def update_income(self, income_id: int, user_id:int, updated_data: dict):
 
         income = await self.get_income_by_id(income_id = income_id, user_id = user_id)
 
