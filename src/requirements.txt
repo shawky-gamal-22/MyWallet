@@ -11,3 +11,11 @@ asyncpg==0.30.0
 alembic==1.16.4
 psycopg2==2.9.10
 pdf2image==1.17.0
+
+# Task queue
+celery==5.5.3
+redis== 6.2.0
+kombu== 5.5.4
+billiard==4.2.1
+vine==5.1.0
+flower==2.0.1
