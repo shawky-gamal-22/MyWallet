@@ -13,3 +13,4 @@ class User(SQLAlchemyBase):
 
     invoices = relationship("Invoice", back_populates="user")
     incomes = relationship("Income", back_populates="user")
+    balance = relationship("UserBalance", uselist= False, back_populates="user")
