@@ -4,3 +4,4 @@ from .category import Category
 from .invoice import Invoice
 from .income import Income
 from .income_category import IncomeCategory
+from .user_balance import UserBalance
