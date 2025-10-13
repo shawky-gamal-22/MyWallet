@@ -16,6 +16,15 @@ class Settings(BaseSettings):
     POSTGRES_PORT: int
     POSTGRES_MAIN_DATABASE: str
 
+
+    CELERY_BROKER_URL: str 
+    CELERY_RESULT_BACKEND: str 
+    CELERY_TASK_SERIALIZER: str 
+    CELERY_TASK_TIME_LIMIT: int
+    CELERY_TASK_ACKS_LATE : bool 
+    CELERY_WORKER_CONCURRENCY: int
+    CELERY_FLOWER_PASSWORD : str
+
     class Config:
         env_file = ".env"
 
