@@ -22,7 +22,7 @@ class InvoiceModel(BaseDataModel):
         Asynchronous factory method to create an instance of InvoiceModel.
 
         :param db_client: The database client/session maker.
-        :return: An instance of UserModel.
+        :return: An instance of InvoiceModel.
         """
         return cls(db_client)
 
