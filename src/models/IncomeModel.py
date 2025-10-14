@@ -1,5 +1,6 @@
 from .BaseDataModel import BaseDataModel
-from .db_schemes import Income
+from .db_schemes import Income, UserBalance
+from .UserBalanceModel import UserBalanceModel
 from sqlalchemy.future import select
 from datetime import datetime
 from sqlalchemy import func
@@ -18,6 +19,7 @@ class IncomeModel(BaseDataModel):
         super().__init__(db_client= db_client)
 
         self.db_client = db_client
+        
 
 
     @classmethod
@@ -43,20 +45,32 @@ class IncomeModel(BaseDataModel):
         """
         Create new income record
         """
-        new_income_record = Income(
-            user_id = user_id,
-            category_id = category_id,
-            source_name = source_name,
-            amount = amount, 
-            is_recurring = is_recurring,
-            description = description,
-            recurrence_interval = recurrence_interval if recurrence_interval else None,
-            next_due_date = next_due_date if next_due_date else None
-        )
+        
 
         async with self.db_client() as session:
             async with session.begin():
+                new_income_record = Income(
+                user_id = user_id,
+                category_id = category_id,
+                source_name = source_name,
+                amount = amount, 
+                is_recurring = is_recurring,
+                description = description,
+                recurrence_interval = recurrence_interval if recurrence_interval else None,
+                next_due_date = next_due_date if next_due_date else None
+                )
                 session.add(new_income_record)
+
+                stmt = select(UserBalance).where(UserBalance.user_id == user_id)
+                result = await session.execute(stmt)
+                user_balance = result.scalar_one_or_none()
+
+                if not user_balance:
+                    raise ValueError(f"No balance found for user_id={user_id}")
+                
+                user_balance.current_balance += amount 
+                session.add(user_balance)
+
 
             await session.refresh(new_income_record)
             return new_income_record
@@ -77,20 +91,41 @@ class IncomeModel(BaseDataModel):
 
             return result
         
-    async def update_income(self, income_id: int, user_id:int, updated_data: dict):
-
-        income = await self.get_income_by_id(income_id = income_id, user_id = user_id)
-
-        if not income:
-            return None
-        
+    async def update_income(self, income_id: int, user_id: int, updated_data: dict):
         async with self.db_client() as session:
             async with session.begin():
-        
-                for key, value in updated_data.items():
-                    setattr(income, key, value)
-                session.add(income)
+                # Fetch the income record
+                stmt = select(Income).where(Income.id == income_id, Income.user_id == user_id)
+                result = await session.execute(stmt)
+                income = result.scalar_one_or_none()
 
+                if not income:
+                    raise ValueError(f"No income found with income_id={income_id}")
+
+                # Check if amount needs to be updated (and adjust user balance)
+                new_amount = updated_data.get("amount")
+                if new_amount is not None and new_amount != income.amount:
+                    diff = new_amount - income.amount
+
+                    # Fetch user balance once
+                    balance_stmt = select(UserBalance).where(UserBalance.user_id == user_id)
+                    result = await session.execute(balance_stmt)
+                    user_balance = result.scalar_one_or_none()
+
+                    if not user_balance:
+                        raise ValueError(f"No balance found for user_id={user_id}")
+
+                    user_balance.current_balance += diff
+                    income.amount = new_amount  # update amount manually
+                    # remove "amount" from dict so it doesn't get set again below
+                    updated_data.pop("amount")
+
+                # Update other fields dynamically
+                for key, value in updated_data.items():
+                    if hasattr(income, key) and value is not None:
+                        setattr(income, key, value)
+
+            # refresh after commit
             await session.refresh(income)
             return income
     
