@@ -1,5 +1,5 @@
 from .BaseDataModel import BaseDataModel
-from .db_schemes import Invoice
+from .db_schemes import Invoice, UserBalance
 from sqlalchemy.future import select
 from datetime import datetime
 from sqlalchemy import func
@@ -55,6 +55,18 @@ class InvoiceModel(BaseDataModel):
                     img_path=img_path
                 )
                 session.add(new_invoice)  # No await here
+
+                stmt = select(UserBalance).where(UserBalance.user_id == user_id)
+                result = await session.execute(stmt)
+                user_balance = result.scalar_one_or_none()
+
+                if not user_balance:
+                    raise ValueError(f"No balance found for user_id={user_id}")
+                
+                user_balance.current_balance -= total_price
+                session.add(user_balance)
+
+
             await session.refresh(new_invoice)
             return new_invoice
         
@@ -85,6 +97,7 @@ class InvoiceModel(BaseDataModel):
     
     async def update_invoice(self, 
                              invoice_id: int, 
+                             user_id: int ,
                              total_price: int = None, 
                              description: str = None, 
                              category_id: int = None, 
@@ -92,7 +105,7 @@ class InvoiceModel(BaseDataModel):
         
         async with self.db_client() as session:
             async with session.begin():
-                stmt = select(Invoice).where(Invoice.id == invoice_id)
+                stmt = select(Invoice).where(Invoice.id == invoice_id, Invoice.user_id == user_id)
                 result = await session.execute(stmt)
                 invoice = result.scalars().first()
                 
@@ -100,7 +113,25 @@ class InvoiceModel(BaseDataModel):
                     return None
                 
                 if total_price is not None:
+                    old_price = invoice.total_price
+                    new_price = total_price
                     invoice.total_price = total_price
+
+                    dif = new_price - old_price
+
+                    stmt = select(UserBalance).where(UserBalance.user_id == user_id)
+                    result = await session.execute(stmt)
+                    user_balance = result.scalar_one_or_none()
+
+                    if not user_balance:
+                        raise ValueError(f"No balance found for user_id={user_id}")
+                                         
+                    user_balance.current_balance -= dif
+
+                    session.add(user_balance)
+
+
+
                 if description is not None:
                     invoice.description = description
                 if category_id is not None:
