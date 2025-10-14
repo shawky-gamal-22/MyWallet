@@ -1,5 +1,5 @@
 from .BaseDataModel import BaseDataModel
-from .db_schemes import User
+from .db_schemes import User, UserBalance
 from sqlalchemy.future import select
 
 
@@ -38,26 +38,24 @@ class UserModel(BaseDataModel):
 
     async def create_user(self, username: str, email: str, hashed_password: str):
         """
-        Create a new user in the database.
-
-        :param username: The username of the new user.
-        :param email: The email of the new user.
-        :param password_hash: The hashed password of the new user.
-        :return: The created user object.
+        Create a new user in the database and initialize balance.
         """
         user_by_email = await self.get_user_by_email(email)
         if user_by_email:
-            return None  # User with this email already exists
-        
-        else:
+            return None
 
-            async with self.db_client() as session:
-                async with session.begin():
-                    new_user = User(username=username, email=email, hashed_password=hashed_password)
-                    session.add(new_user)
-                
-                await session.refresh(new_user)
-                return new_user
+        async with self.db_client() as session:
+            async with session.begin():
+                new_user = User(username=username, email=email, hashed_password=hashed_password)
+                session.add(new_user)
+                await session.flush()  # ensure new_user.id is generated
+
+                user_balance = UserBalance(user_id=new_user.id, current_balance=0.0)
+                session.add(user_balance)
+
+            # refresh both together after commit
+            await session.refresh(new_user, attribute_names=["balance"])
+            return new_user
         
     async def get_user_by_email(self, email: str):
         """
