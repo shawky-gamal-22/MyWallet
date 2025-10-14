@@ -15,8 +15,8 @@ logger = logging.getLogger(__name__)
 nlp_data_router = APIRouter()
 
 
-@nlp_data_router.post("/extract-tabular-data/")
-async def extract_tabular_data( request: Request, file: UploadFile = File(...)):
+@nlp_data_router.post("/extract-tabular-data/{user_id}")
+async def extract_tabular_data( request: Request, user_id: int ,file: UploadFile = File(...)):
 
     try:
 
@@ -26,10 +26,10 @@ async def extract_tabular_data( request: Request, file: UploadFile = File(...)):
         ocr_object = await NLPDataController.create_instance(request.app.db_client)
         invoice_model = await InvoiceModel.create_instance(request.app.db_client)
 
-        user_id = 1  # Replace with actual user ID as needed
+        user_id = user_id # Replace with actual user ID as needed
         img_path = await data_controller.save_uploaded_file(user_id, file)
         
-        extracted_row = await ocr_object.extract_tabular_data(image_bytes, user_id=1)
+        extracted_row = await ocr_object.extract_tabular_data(image_bytes, user_id=user_id)
 
 
         new_invoice = await invoice_model.create_invoice(
