@@ -3,9 +3,10 @@ from .db_schemes import Income, UserBalance
 from .UserBalanceModel import UserBalanceModel
 from sqlalchemy.future import select
 from datetime import datetime
-from sqlalchemy import func
+from sqlalchemy import func, or_
 from sqlalchemy.future import select
 from datetime import timedelta, timezone, date
+from dateutil.relativedelta import relativedelta
 
 
 
@@ -192,4 +193,53 @@ class IncomeModel(BaseDataModel):
         return result
     
 
-    
+    async def cron_task_for_recurring_incomes(self, today: date, page_no: int, page_size: int):
+
+        async with self.db_client() as session:
+            stmt = select(Income).where(
+                Income.is_recurring == True,
+                Income.next_due_date <= today,
+                or_(
+                    Income.last_run_date == None,
+                    Income.last_run_date < Income.next_due_date
+                )
+            ).offset((page_no-1)*page_size).limit(page_size)
+
+            result = await session.execute(stmt)
+            incomes = result.scalars().all()
+
+            if not incomes:
+                return []
+            
+            # prefetch balances
+            user_ids = [income.user_id for income in incomes]
+            stmt = select(UserBalance).where(UserBalance.user_id.in_(user_ids))
+            result = await session.execute(stmt)
+            balances= {b.user_id: b for b in result.scalars().all()}
+
+            for income in incomes:
+
+                balance = balances.get(income.user_id)
+
+                if not balance:
+                    continue # skip users without balance
+                
+                balance.current_balance += income.amount
+
+                if income.recurrence_interval == "daily":
+                    income.next_due_date += timedelta(days=1)
+                elif income.recurrence_interval == "weekly":
+                    income.next_due_date += timedelta(weeks=1)
+                elif income.recurrence_interval == "monthly":
+                    income.next_due_date += relativedelta(months=1)
+                elif income.recurrence_interval == "yearly":
+                    income.next_due_date += relativedelta(years=1)
+                income.last_run_date = today
+
+            await session.commit()
+            return incomes
+            
+
+
+
+
