@@ -1,5 +1,5 @@
 from .base import SQLAlchemyBase
-from sqlalchemy import Column, Integer, String, DateTime, func, Float, Index, Boolean, Date
+from sqlalchemy import Column, Integer, String, DateTime, func, Float, Index, Boolean, Date, text
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql.schema import ForeignKey
 
@@ -23,6 +23,7 @@ class Income(SQLAlchemyBase):
     recurrence_interval = Column(String, nullable=True) # e.g. "monthly", "weekly"
     next_due_date = Column(Date, nullable=True)
 
+    last_run_date = Column(Date, nullable= True)
 
     user = relationship("User", back_populates="incomes")
     category = relationship("IncomeCategory", back_populates="incomes")
@@ -34,5 +35,11 @@ class Income(SQLAlchemyBase):
         Index("idx_incomes_user_id", 'user_id'),
         Index("idx_incmoes_user_id_category_id", "user_id", "category_id"),
         Index("idx_incomes_created_at", 'created_at'),
-        Index("idx_incomes_is_recurring", 'is_recurring')
+        Index("idx_incomes_is_recurring", 'is_recurring'),
+        Index(
+            "indx_recurring_incomes",
+            "next_due_date",
+            "last_run_date",
+            postgresql_where=text("is_recurring = TRUE")
+        )
     )
