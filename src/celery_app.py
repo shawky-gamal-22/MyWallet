@@ -2,7 +2,7 @@ from celery import Celery
 from helpers.config import get_settings
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
-
+from celery.schedules import crontab
 
 settings = get_settings()
 
@@ -47,12 +47,14 @@ celery_app.conf.update(
     broker_connection_max_retries=10,
     worker_cancel_long_running_tasks_on_connection_loss=True,
 
-    task_routes={},
+    task_routes={
+        "tasks.update_recurring_income.update_recurring_income":{"queue":"default"}
+    },
 
     beat_schedule={
-        'cleanup-old-task-records':{
-            'task': "tasks.maintanance.clean_celery_executions_table",
-            'schedule': 86400,
+        'process-recurring-incomes-every-day':{
+            'task': "tasks.update_recurring_income.update_recurring_income",
+            'schedule': crontab(hour=0, minute=0), # 00:00 every day
             'args':()
 
         }
