@@ -3,6 +3,7 @@ from helpers.config import get_settings
 from models.enums import ResponseStatus
 from models import IncomeModel
 from asgiref.sync import async_to_sync
+import asyncio
 import logging
 from datetime import date
 
@@ -15,13 +16,16 @@ logger = logging.getLogger(__name__)
     retry_kwargs={"max_retries": 3, "countdown": 60},
 )
 def update_recurring_income(self):
-    async_to_sync(_update_recurring_income)(self)
-
+    logger.info("🚀 Celery Beat triggered: update_recurring_income started.")
+    return asyncio.run(
+        _update_recurring_income(self)
+    )
+    # logger.info("✅ Celery Beat completed: update_recurring_income finished.")
 
 async def _update_recurring_income(task_instance):
     db_engine, db_client = None, None
     try:
-        db_engine, db_client = await get_setup_utils()
+        db_engine, db_client = get_setup_utils()
         income_model = await IncomeModel.create_instance(db_client=db_client)
 
         today = date.today()
