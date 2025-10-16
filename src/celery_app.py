@@ -6,7 +6,7 @@ from celery.schedules import crontab
 
 settings = get_settings()
 
-async def get_setup_utils():
+def get_setup_utils():
 
     settings = get_settings()
     postgres_conn = f"postgresql+asyncpg://{settings.POSTGRES_USER}:{settings.POSTGRES_PASSWORD}@{settings.POSTGRES_HOST}:{settings.POSTGRES_PORT}/{settings.POSTGRES_MAIN_DATABASE}"
@@ -24,8 +24,10 @@ async def get_setup_utils():
 celery_app = Celery(
     "MyWallet",
     broker= settings.CELERY_BROKER_URL,
-    backend= settings.CELERY_RESULT_BACKEND
+    backend= settings.CELERY_RESULT_BACKEND,
 )
+# Import tasks AFTER celery_app is created
+celery_app.autodiscover_tasks(['tasks'], force=True)
 
 # Configure celery with essential settings
 
@@ -52,14 +54,19 @@ celery_app.conf.update(
     },
 
     beat_schedule={
-        'process-recurring-incomes-every-day':{
+        'process_recurring_incomes_every_day':{
             'task': "tasks.update_recurring_income.update_recurring_income",
-            'schedule': crontab(hour=0, minute=0), # 00:00 every day
+            #'schedule': crontab(hour=0, minute=0), # 00:00 every day
+            'schedule': 15.0, # every 15 seconds
             'args':()
 
         }
     },
+    task_default_queue = "default",
     timezone = 'UTC',
+    # Important: Ensure worker state is properly initialized
+    worker_prefetch_multiplier=1,
+    worker_max_tasks_per_child=1000,
 )
 
-celery_app.conf.task_default_queue = "default"
+
