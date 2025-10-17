@@ -50,7 +50,8 @@ celery_app.conf.update(
     worker_cancel_long_running_tasks_on_connection_loss=True,
 
     task_routes={
-        "tasks.update_recurring_income.update_recurring_income":{"queue":"default"}
+        "tasks.update_recurring_income.update_recurring_income":{"queue":"default"},
+        "tasks.update_recurring_invoices.update_recurring_invoices":{"queue":"default"}
     },
 
     beat_schedule={
@@ -60,6 +61,11 @@ celery_app.conf.update(
             'schedule': 15.0, # every 15 seconds
             'args':()
 
+        },
+        'process_recurring_invoices_every_day':{
+            'task': "tasks.update_recurring_invoices.update_recurring_invoices",
+            'schedule': crontab(hour=0, minute=0), # every day at 00:00 AM, Once daily at midnight
+            'args': ()
         }
     },
     task_default_queue = "default",
