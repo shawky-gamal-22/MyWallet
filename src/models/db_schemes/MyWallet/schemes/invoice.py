@@ -1,5 +1,5 @@
 from .base import SQLAlchemyBase
-from sqlalchemy import Column, Integer, String, DateTime, func, Float, Index
+from sqlalchemy import Column, Integer, String, Boolean ,DateTime, Date ,func, Float, Index, text
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql.schema import ForeignKey
 
@@ -16,6 +16,13 @@ class Invoice(SQLAlchemyBase):
     created_at = Column(DateTime(timezone=True),server_default=func.now(), nullable=False)
     img_path = Column(String, nullable=True)
 
+
+    # Recurrence fields
+    is_recurring = Column(Boolean, default=False)
+    recurring_interval = Column(String, nullable= True) # e.g. "daily", "monthly", "weekly"
+    next_due_date = Column(Date, nullable = True)
+    last_run_date = Column(Date, nullable = True)
+
     user = relationship("User", back_populates="invoices")
     category = relationship("Category", back_populates="invoices")
 
@@ -27,4 +34,5 @@ class Invoice(SQLAlchemyBase):
         Index('idx_user_id', 'user_id'),
         Index('idx_created_at', 'created_at'),
         Index('idx_invoice_name', 'invoice_name'),
+        Index('idx_recurring_invoices', 'next_due_date', 'last_run_date', postgres_where=text("is_recurring = TRUE"))
     )
