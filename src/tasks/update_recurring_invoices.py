@@ -16,11 +16,11 @@ logger = logging.getLogger(__name__)
     retry_kwargs={"max_retries": 3, "countdown": 60},
 )
 def update_recurring_invoices(self):
-    logger.info("🚀 Celery Beat triggered: update_recurring_income started.")
+    logger.info("🚀 Celery Beat triggered: update_recurring_invoicesstarted.")
     asyncio.run(
         _update_recurring_invoices(self)
     )
-    logger.info("✅ Celery Beat completed: update_recurring_income finished.")
+    logger.info("✅ Celery Beat completed: update_recurring_invoices finished.")
 
 async def _update_recurring_invoices(task_instance):
 
