@@ -2,9 +2,10 @@ from .BaseDataModel import BaseDataModel
 from .db_schemes import Invoice, UserBalance
 from sqlalchemy.future import select
 from datetime import datetime
-from sqlalchemy import func
+from sqlalchemy import func, or_
 from sqlalchemy.future import select
-from datetime import timedelta, timezone
+from datetime import timedelta, timezone, date
+from dateutil.relativedelta import relativedelta
 
 
 class InvoiceModel(BaseDataModel):
@@ -33,7 +34,9 @@ class InvoiceModel(BaseDataModel):
                              invoice_name: str,
                              total_price: float,
                              description: str = None,
-                             img_path: str = None) -> Invoice:
+                             img_path: str = None,
+                             is_recurring: bool = False,
+                             recurring_interval: str = None) -> Invoice:
         
         """
         Create a new invoice record in the database.
@@ -52,7 +55,9 @@ class InvoiceModel(BaseDataModel):
                     invoice_name=invoice_name,
                     total_price=total_price,
                     description=description,
-                    img_path=img_path
+                    img_path=img_path,
+                    is_recurring = is_recurring,
+                    recurring_interval = recurring_interval
                 )
                 session.add(new_invoice)  # No await here
 
@@ -216,6 +221,54 @@ class InvoiceModel(BaseDataModel):
             )
             result = await session.execute(stmt)
             invoices = result.scalars().all()
+            return invoices
+        
+    
+    async def cron_task_for_recurring_invoices(self,  today: date, page_no: int, page_size: int):
+
+        async with self.db_client() as session:
+            stmt = select(Invoice).where(
+                Invoice.is_recurring == True,
+                Invoice.next_due_date <= today,
+                or_(
+                    Invoice.last_run_date == None,
+                    Invoice.last_run_date < Invoice.next_due_date
+                )
+            ).offset((page_no-1)*page_size).limit(page_size)
+
+            result = await session.execute(stmt)
+            invoices = result.scalars().all()
+
+            if not invoices:
+                return []
+            
+            # prefetch balances
+            user_ids = [income.user_id for income in invoices]
+            stmt = select(UserBalance).where(UserBalance.user_id.in_(user_ids))
+            result = await session.execute(stmt)
+            balances= {b.user_id: b for b in result.scalars().all()}
+
+            for invoice in invoices:
+
+                balance = balances.get(invoice.user_id)
+
+                if not balance:
+                    continue # skip users without balance
+
+                balance.current_balance -= invoice.total_price
+
+                if invoice.recurrence_interval == "daily":
+                    invoice.next_due_date += timedelta(days=1)
+                elif invoice.recurrence_interval == "weekly":
+                    invoice.next_due_date += timedelta(weeks=1)
+                elif invoice.recurrence_interval == "monthly":
+                    invoice.next_due_date += relativedelta(months=1)
+                elif invoice.recurrence_interval == "yearly":
+                    invoice.next_due_date += relativedelta(years=1)
+                invoice.last_run_date = today
+
+            
+            await session.commit()
             return invoices
 
     
