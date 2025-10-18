@@ -7,33 +7,30 @@ The system extracts data from invoice images, stores them in a structured databa
 
 ## 🚀 Features
 
-- 📸 **Invoice Capture**: Upload an invoice image, automatically processed with OCR + LLM to extract data.
-- 🗄 **Data Storage**: Store invoices in PostgreSQL with metadata (user, category, price, description, date, and file path).
-- 📂 **File Management**: Save invoice images in organized folders (per user).
-- 🔍 **Filtering**: Retrieve invoices for a specific user within a date range.
-- 📊 **Summaries**: Generate spending summaries (total invoices, total amount spent, categorized breakdown, and habits).
-- 🔒 **Multi-user Ready**: Authentication with email & password, each user has isolated data.
-- 📈 **Future Extensions** (planned):
-  - Balance tracking (income vs expenses).
+✅ 📸 **Incomes & Expenses Management**
+- Add, update, and delete income and expense records.
+- Categorize transactions by type or frequency.
+
+✅ **Recurring Transactions**
+- Automatically process recurring **incomes** and **invoices** using Celery Beat tasks.
+- Define recurrence rules (daily, weekly, monthly, etc.).
+
+✅ **Data Storage**: Store invoices in PostgreSQL with metadata (user, category, price, description, date, and file path).
+✅ **File Management**: Save invoice images in organized folders (per user).
+
+✅ **Filtering**: Retrieve invoices for a specific user within a date range.
+
+✅ **Summaries**: Generate spending summaries (total invoices, total amount spent, categorized breakdown, and habits).
+
+ 🔒 **Multi-user Ready**: Authentication with email & password, each user has isolated data.
+
+ 📈 **Future Extensions** (planned):
   - Reports export (Excel/PDF).
   - Visualizations (charts for categories & trends).
   - Multi-language OCR support.
 
 ---
 
-## 🏗 System Architecture
-
-1. **User uploads invoice image** via API.  
-2. **OCR Model** extracts text from the image.  
-3. **LLM (Large Language Model)** parses text into structured key-value pairs.  
-4. Data stored in **PostgreSQL** (Invoices, Categories, Users).  
-5. API provides endpoints to:
-   - Add invoices
-   - Retrieve invoices by date
-   - Generate summaries  
-6. Invoice image saved locally under `/assets/images/{user_id}/`.
-
----
 
 ## 🗂 Database Schema
 
@@ -43,7 +40,7 @@ The system extracts data from invoice images, stores them in a structured databa
 - `password_hash`
 - `name`
 
-### Categories
+### InvoiceCategories
 - `id`
 - `name`
 - `description`
@@ -56,61 +53,47 @@ The system extracts data from invoice images, stores them in a structured databa
 - `description`
 - `created_at`
 - `img_path`
+- `is_recurring`
+- `recurrence_interval`
+- `next_due_date`
+- `last_run_date`
+
+### Incomies
+- `id`
+- `user_id`
+- `category_id`
+- `amount`
+- `source_name`
+- `created_at`
+- `is_recurring`
+- `recurrence_interval`
+- `next_due_date`
+- `last_run_date`
+
+### IncomiesCategories
+- `id`
+- `name`
+- `description`
+
+### UsertBalance
+- `user_id`
+- `current_balance`
+
 
 ---
 
 ## ⚙️ Tech Stack
 
-- **Backend**: [FastAPI](https://fastapi.tiangolo.com/) (Python)
-- **Database**: [PostgreSQL](https://www.postgresql.org/)
-- **ORM**: SQLAlchemy (Async)
-- **AI Models**:  
-  - OCR (Tesseract / custom model)  
-  - LLM (for parsing invoice data into structured format)
-- **Tools**: Pydantic, Alembic (for migrations), Postman (for testing)
+| Component | Technology |
+|------------|-------------|
+| **Backend Framework** | [FastAPI](https://fastapi.tiangolo.com/) |
+| **Database** | PostgreSQL |
+| **ORM** | SQLAlchemy Async + Alembic |
+| **Task Queue** | Celery |
+| **Message Broker** | Redis |
+| **Containerization** | Docker & Docker Compose |
 
 ---
-
-## 📌 Example Workflow
-
-### 1. Upload Invoice
-Input: An image of a bill (e.g. WE Internet Bill).  
-The system extracts:
-```json
-{
-  "user_id": 1,
-  "category_id": 4,
-  "invoice_name": "WE internet bill",
-  "total_price": 260.5,
-  "description": "Payment for home internet bill",
-  "file_path": "/assets/images/user_1/invoice_123.jpeg"
-}
-```
-
-### 2. Get summary
-Input:
-``` json
-{
-  "start_date": "2025-09-30",
-  "end_date": "2025-10-01"
-}
-
-```
-
-Response:
-```json
-{
-  "summary": {
-    "date_range": "2025-09-30 to 2025-10-01",
-    "total_invoices": 4,
-    "total_amount_spent": 1042.0,
-    "categories": {
-      "Utilities": 1042.0
-    },
-    "spending_habits": "The user spent a total of $1042.0 on utilities (4 transactions)."
-  }
-}
-```
 
 
 ## ✨ Current Progress
@@ -126,16 +109,14 @@ Response:
   - Purchase locations  
   This enables users to easily track their expenses across any time range.
  
+- ✅ **Income & Balance Tracking**  
+  - Add support for multiple **income sources** (salary, freelance, etc.).  
+  - Implement **current balance calculation** = total income − total expenses.  
+  - Keep a **historical balance record** for financial trend tracking. 
 
 
 ## 🚀 Roadmap(Future Work)
 
-### 💰 Income & Balance Tracking
-- Add support for multiple **income sources** (salary, freelance, etc.).  
-- Implement **current balance calculation** = total income − total expenses.  
-- Keep a **historical balance record** for financial trend tracking.  
-
----
 
 ### 🧾 Advanced Invoice Management
 - Support multiple **invoice types** (shopping, utilities, groceries, etc.).  
