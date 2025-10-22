@@ -20,3 +20,8 @@ billiard==4.2.1
 vine==5.1.0
 flower==2.0.1
 asgiref==3.10.0
+
+
+# Agents
+langgraph==1.0.1
+langchain-core==0.3.79
