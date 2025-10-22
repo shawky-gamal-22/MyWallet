@@ -3,6 +3,8 @@ from langchain_core.runnables import RunnableConfig
 from models import UserModel
 from fastapi import Request
 
+
+# node
 async def get_current_user(state: AgentState, config: RunnableConfig, request: Request):
     user_id = config["configurable"].get("user_id",None)
 
