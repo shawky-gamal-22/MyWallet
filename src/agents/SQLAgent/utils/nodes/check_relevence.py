@@ -62,6 +62,7 @@ async def get_schema(engine):
 async def check_relevance(state: AgentState, engine):
     question = state['question']
     #question = "What is the last receipt for me?"
+    
     schema = await get_schema(engine)
 
     system = """You are an assistant that determines whether a given question is related to the following database schema.
