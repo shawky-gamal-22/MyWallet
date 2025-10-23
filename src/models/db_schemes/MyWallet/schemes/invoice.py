@@ -34,5 +34,5 @@ class Invoice(SQLAlchemyBase):
         Index('idx_user_id', 'user_id'),
         Index('idx_created_at', 'created_at'),
         Index('idx_invoice_name', 'invoice_name'),
-        Index('idx_recurring_invoices', 'next_due_date', 'last_run_date', postgres_where=text("is_recurring = TRUE"))
+        Index('idx_recurring_invoices', 'next_due_date', 'last_run_date', postgresql_where=text("is_recurring = TRUE"))
     )
