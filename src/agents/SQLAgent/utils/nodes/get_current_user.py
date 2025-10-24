@@ -7,27 +7,30 @@ from fastapi import Request
 
 
 # node
-async def get_current_user(state: AgentState, config: RunnableConfig, request: Request):
+async def get_current_user(state: AgentState, config: RunnableConfig):
     user_id = config["configurable"].get("user_id",None)
-
+    engine = config['configurable'].get('engine', None)
+    db_client = config['configurable'].get('db_client', None)
+    state['user_id'] = user_id
     if not user_id:
-        state['user_id'] = "user not found"
+        state['user_id'] = None
 
     try:
     
-        user_model = await UserModel.create_instance(db_client= request.app.db_client)
+        user_model = await UserModel.create_instance(db_client= db_client)
 
         user = await user_model.get_user_by_id(user_id= user_id)
 
         if user:
             state['user_name'] = user.username
-            state['user_id'] = user_id
+            
         else:
             state['user_name'] = "user not found"
 
         return state
     except:
         state['user_name'] ="Error while fetching the user name"
+        return state
 
 
 
