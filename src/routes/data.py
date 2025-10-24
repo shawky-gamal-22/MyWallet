@@ -1,7 +1,8 @@
 from fastapi import FastAPI, Depends, APIRouter, UploadFile, File, Request
 from helpers.config import get_settings
 from stores.OCR import Pytesseract, MistralOCR
-from agents.SQLAgent.utils.nodes import check_relevance
+from controllers import AgentController
+from .schemes import AgentRequest
 
 data_router = APIRouter()
 
@@ -32,7 +33,13 @@ async def extract_text(file: UploadFile = File(...), app_settings=Depends(get_se
         "extracted_text": extracted_text
     }
 
-@data_router.get("/try_relevance")
-async def relevance(request: Request):
+@data_router.post("/try_relevance/{user_id}")
+async def relevance(request: Request, user_id: int, agent_req:AgentRequest):
+    agent_controller = await AgentController.create_instance()
 
-    return await check_relevance(engine= request.app.db_engine)
+    result = await agent_controller.AgentInvoke(question= agent_req.question, 
+                                                user_id= user_id, 
+                                                engine = request.app.db_engine,
+                                                db_clinet = request.app.db_client)
+
+    return result 
