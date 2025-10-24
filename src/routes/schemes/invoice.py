@@ -9,8 +9,6 @@ class InvoiceRequest(BaseModel):
     img_path: str | None = None
 
 
-    
-from pydantic import BaseModel
 
 class DateRangeRequest(BaseModel):
     start_date: str
