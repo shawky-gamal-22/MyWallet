@@ -1,7 +1,7 @@
 from sqlalchemy import inspect
 from ..state import AgentState
-from fastapi import Request
 from stores.llm import GroqProvider
+from langchain_core.runnables import RunnableConfig
 import json
 
 
@@ -59,11 +59,13 @@ async def get_schema(engine):
     return schema
 
 
-async def check_relevance(state: AgentState, engine):
+#node
+async def check_relevance(state: AgentState, config: RunnableConfig):
     question = state['question']
     #question = "What is the last receipt for me?"
-    
+    engine = config['configurable'].get("engine", None)
     schema = await get_schema(engine)
+    state['schema'] = schema
 
     system = """You are an assistant that determines whether a given question is related to the following database schema.
 
@@ -74,7 +76,7 @@ async def check_relevance(state: AgentState, engine):
 
     You should know that Invoice table have other words with the same meaning like receipt, bill, etc.... take care of something like this.
 
-    Respond with only "relevant" or "not_relevent" with key "relevence" in JSON Format.
+    Respond with only "relevant" or "not_relevent" with key "relevance" in JSON Format.
     """.format(schema=schema)
 
     human = f"Question: {question}"
@@ -91,5 +93,15 @@ async def check_relevance(state: AgentState, engine):
     relevance = llm.invoke(messages)
     parsed_output = json.loads(relevance.content)
 
+    state['relevance'] = parsed_output['relevance']
+    return state
 
-    return parsed_output
+
+#router
+
+async def relevance_router(state: AgentState):
+
+    if state['relevance'].lower() =="relevant":
+        return "convert_to_sql"
+    else:
+        return "generate_funny_response"
