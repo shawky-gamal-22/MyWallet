@@ -2,7 +2,8 @@ from typing_extensions import TypedDict
 from pydantic import BaseModel, Field
 
 
-class AgentState(BaseModel):
+
+class AgentState(TypedDict):
 
     question: str
     sql_query: str
@@ -11,6 +12,7 @@ class AgentState(BaseModel):
     user_id: int
     user_name: str
     attempts: int 
-    relevence: str
+    relevance: str
+    schema: str
     sql_error: bool
   
