@@ -9,7 +9,6 @@ from fastapi import Request
 # node
 async def get_current_user(state: AgentState, config: RunnableConfig):
     user_id = config["configurable"].get("user_id",None)
-    engine = config['configurable'].get('engine', None)
     db_client = config['configurable'].get('db_client', None)
     state['user_id'] = user_id
     if not user_id:
