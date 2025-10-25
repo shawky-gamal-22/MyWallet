@@ -4,7 +4,8 @@ from .utils.nodes import (
     get_current_user,
     check_relevance,
     relevance_router,
-    convert_to_sql
+    convert_to_sql,
+    execute_sql
 )
 
 class SQLAgent:
@@ -16,6 +17,7 @@ class SQLAgent:
         self.agent.add_node("get_current_user", get_current_user)
         self.agent.add_node("check_relevance", check_relevance)
         self.agent.add_node("convert_to_sql", convert_to_sql)
+        self.agent.add_node("execute_sql", execute_sql)
 
 
         self.agent.add_edge(START,"get_current_user")
@@ -29,8 +31,8 @@ class SQLAgent:
                 
             }
         )
-        self.agent.add_edge("convert_to_sql", END)
-
+        self.agent.add_edge("convert_to_sql", "execute_sql")
+        self.agent.add_edge("execute_sql", END)
 
         self.SQLAgent = self.agent.compile()
 
