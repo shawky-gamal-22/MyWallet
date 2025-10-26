@@ -104,4 +104,4 @@ async def relevance_router(state: AgentState):
     if state['relevance'].lower() =="relevant":
         return "convert_to_sql"
     else:
-        return "generate_funny_response"
+        return "return_state"
