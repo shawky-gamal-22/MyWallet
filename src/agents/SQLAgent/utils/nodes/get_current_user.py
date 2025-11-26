@@ -22,13 +22,16 @@ async def get_current_user(state: AgentState, config: RunnableConfig):
 
         if user:
             state['user_name'] = user.username
+            state['user_email'] = user.email
             
         else:
             state['user_name'] = "user not found"
+            state['user_email'] = "user not found"
 
         return state
     except:
         state['user_name'] ="Error while fetching the user name"
+        state['user_email'] = "Error while fetching the user email"
         return state
 
 
