@@ -11,6 +11,7 @@ class AgentState(TypedDict):
     query_rows: list
     user_id: int
     user_name: str
+    user_email: str
     attempts: int 
     relevance: str
     schema: str
