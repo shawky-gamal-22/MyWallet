@@ -1,1 +1,1 @@
-from .sql_agent import SQLAgent
+from .sql_agent import SQLAgent, create_instance
