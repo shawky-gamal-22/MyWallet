@@ -1,6 +1,7 @@
 from stores.llm import GroqProvider
 import json
-from src.agents.ReportAgent.utils.ReportState import ReportState
+import logging
+from agents.ReportAgent.utils.ReportState import ReportState
 
 
 
@@ -34,9 +35,17 @@ async def interpretation_node(state:ReportState):
     # create_instance is async; await it
     instance = await GroqProvider.create_instance()
     llm = instance.client
-    plan_json = await llm.invoke(message)
-
-    plan = json.loads(plan_json)
+    # prefer the async invocation and parse the returned content (which may be a JSON string)
+    plan_response = await llm.ainvoke(message)
+    plan_str = plan_response.content if hasattr(plan_response, 'content') else plan_response
+    try:
+        if isinstance(plan_str, dict):
+            plan = plan_str
+        else:
+            plan = json.loads(plan_str)
+    except Exception as e:
+        logging.getLogger(__name__).error(f"Failed to parse plan JSON: {e}; plan_response: {plan_str}")
+        plan = {}
     state["report_type"] = plan.get("report_type", "")
     state["tools"] = plan.get("tools", [])
     state["formatter_hints"] = plan.get("formatter_hints", {})
