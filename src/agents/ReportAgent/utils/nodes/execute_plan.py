@@ -1,8 +1,11 @@
 from ..tools import aggregate_sum, group_count, top_k_items
-from src.agents.ReportAgent.utils.ReportState import ReportState
+from agents.ReportAgent.utils.ReportState import ReportState
+import logging
 
 
-def execute_plan(state: ReportState) -> dict:
+async def execute_plan(state: ReportState) -> dict:
+    logger = logging.getLogger(__name__)
+    logger.info(f"execute_plan start: tools={state.get('tools')}")
     results = {}
     for tool in state.get("tools", []):
         name = tool.get("name")
@@ -18,4 +21,5 @@ def execute_plan(state: ReportState) -> dict:
         results[name] = result
 
     state["tool_results"] = results
+    logger.info(f"execute_plan done: tool_results keys={list(results.keys())}")
     return state
