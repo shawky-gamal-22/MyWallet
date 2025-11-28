@@ -19,13 +19,18 @@ class GroqProvider:
         return cls() 
         
     
-    async def generate_row(self, extracted_text: str, user_id: int, categories: List[dict]) -> dict:
+    async def generate_row(self, extracted_text: str, user_id: int, categories: List[dict] | None = None) -> dict:
+        # Defensive: ensure categories is a list
+        categories = categories or []
 
-        category_list = (
-            "the following list based on the extracted text:\n\n"
-            + "\n".join([f"{category['id']}: {category['name']} - {category['description']}" for category in categories])
-            + "\n\n"
-        )
+        if categories:
+            category_list = (
+                "the following list based on the extracted text:\n\n"
+                + "\n".join([f"{category['id']}: {category['name']} - {category['description']}" for category in categories])
+                + "\n\n"
+            )
+        else:
+            category_list = "There are no categories available."
 
         the_user_id = f"The user_id is {user_id}.\n\n"
         miessages = [
