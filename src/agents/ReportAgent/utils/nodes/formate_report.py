@@ -1,5 +1,6 @@
 from stores.llm import GroqProvider
-from src.agents.ReportAgent.utils.ReportState import ReportState
+from agents.ReportAgent.utils.ReportState import ReportState
+import logging
 
 
 async def format_report(state: ReportState) -> str:
@@ -56,6 +57,10 @@ Here is the data you must use:
     # create_instance is async; await it
     instance = await GroqProvider.create_instance()
     llm = instance.client
-    report = await llm.invoke(message)
-    
-    return report.content
+    report = await llm.ainvoke(message)
+    content_str = report.content if hasattr(report, 'content') else report
+
+    state['report_content'] = content_str
+    state['report_format'] = 'html'
+    logging.getLogger(__name__).info(f"Formatted report content length: {len(str(content_str))}")
+    return state
