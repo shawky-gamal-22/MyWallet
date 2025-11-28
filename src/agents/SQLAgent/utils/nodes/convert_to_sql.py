@@ -5,11 +5,11 @@ import json
 
 
 #node
-async def convert_to_sql(state: AgentState):
+async def convert_to_sql(SqlState: AgentState):
 
-    question = state.get('question')
-    current_user = state.get('user_id')
-    schema = state.get('schema')
+    question = SqlState.get('question')
+    current_user = SqlState.get('user_id')
+    schema = SqlState.get('schema')
 
     system = """You are an assistant that converts natural language questions into SQL queries based on the following schema:
 
@@ -38,6 +38,6 @@ async def convert_to_sql(state: AgentState):
     answer = llm.invoke(messages)
     parsed_answer = json.loads(answer.content)
 
-    state['sql_query'] = parsed_answer['sql_query']
+    SqlState['sql_query'] = parsed_answer['sql_query']
 
-    return state
+    return SqlState

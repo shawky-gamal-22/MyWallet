@@ -3,12 +3,12 @@ from stores.llm import GroqProvider
 import json
 
 
-async def regenerate_question(state: AgentState):
+async def regenerate_question(SqlState: AgentState):
 
     try:
 
-        question = state.get("question")
-        schema = state.get("schema")
+        question = SqlState.get("question")
+        schema = SqlState.get("schema")
 
         system = """You are an assistant that reformulates an original question from the user to enable more precise SQL queries.
                     Ensure that all necessary details, such as table join, are preserved to retrieve complete and accurate data.
@@ -33,30 +33,30 @@ async def regenerate_question(state: AgentState):
         answer = llm.invoke(messages)
         parsed_answer = json.loads(answer.content)
 
-        state['question'] = parsed_answer['question']
-        state["attempts"] += 1
+        SqlState['question'] = parsed_answer['question']
+        SqlState["attempts"] += 1
 
-        return state 
+        return SqlState 
     except Exception as e:
 
-        state['sql_error'] = True
-        state['question'] = f"Can not reformulte the question due to this error {e}"
-        return state
+        SqlState['sql_error'] = True
+        SqlState['question'] = f"Can not reformulte the question due to this error {e}"
+        return SqlState
 
-async def end_max_iterations(state: AgentState):
-    state["query_result"] = "Please try again."
-    return state 
+async def end_max_iterations(SqlState: AgentState):
+    SqlState["query_result"] = "Please try again."
+    return SqlState 
 
-async def execute_sql_router(state: AgentState):
+async def execute_sql_router(SqlState: AgentState):
 
-    if  state.get("sql_error", False):
+    if  SqlState.get("sql_error", False):
         return "regenerate_question"
     else :
         return "return_state"
     
     
-async def check_attempts_router(state: AgentState):
-    if state['attempts'] < 3:
+async def check_attempts_router(SqlState: AgentState):
+    if SqlState.get("attempts",0) < 3:
         return "convert_to_sql"
     else :
         return "end_max_iterations"

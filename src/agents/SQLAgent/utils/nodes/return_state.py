@@ -1,6 +1,6 @@
 from ..state import AgentState
 
 
-async def return_state(state: AgentState):
+async def return_state(SqlState: AgentState):
 
-    return state
+    return SqlState
