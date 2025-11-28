@@ -25,7 +25,7 @@ def top_k_items(rows: list[dict], column: str, k: int = 5) -> dict:
 
 
 
-def email_sender(receiver:str,sub:str, body:str):
+def email_sender(receiver:str,title:str,subject:str, html_body:str):
     
 
     # -----------------------------
@@ -33,17 +33,15 @@ def email_sender(receiver:str,sub:str, body:str):
     # -----------------------------
     sender_email = "shawkygamal150@gmail.com"
     sender_password = "gpzn vbli upsu uxzq"  # NOT your Gmail password!
-    receiver_email = receiver
-    subject = sub
-    html_body = body
 
     # -----------------------------
     # Create the email
     # -----------------------------
     msg = MIMEMultipart()
     msg["From"] = sender_email
-    msg["To"] = receiver_email
+    msg["To"] = receiver
     msg["Subject"] = subject
+    msg["Title"] = title
 
     msg.attach(MIMEText(html_body, "html"))
 
@@ -54,7 +52,7 @@ def email_sender(receiver:str,sub:str, body:str):
         server = smtplib.SMTP("smtp.gmail.com", 587)
         server.starttls()  # Secure connection
         server.login(sender_email, sender_password)
-        server.sendmail(sender_email, receiver_email, msg.as_string())
+        server.sendmail(sender_email, receiver, msg.as_string())
         
 
         print("Email sent successfully!")
