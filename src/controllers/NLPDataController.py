@@ -77,7 +77,7 @@ class NLPDataController(BaseController):
 
         
         if not result:
-            result = None
+            result = []
         
         return result
     
@@ -96,10 +96,15 @@ class NLPDataController(BaseController):
         extracted_text = await self.extract_row_data(image_bytes)
 
         categories = await self.list_categories()
+        categories = categories or []
 
         extracted_row = await self.generate_row(extracted_text, user_id, categories)
 
-        invoice_data = json.loads(extracted_row)
+        # The LLM may return either a dict (if response_format json_object is used) or a JSON string.
+        if isinstance(extracted_row, dict):
+            invoice_data = extracted_row
+        else:
+            invoice_data = json.loads(extracted_row)
 
         return invoice_data
 
