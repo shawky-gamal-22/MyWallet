@@ -26,7 +26,7 @@ async def extract_tabular_data( request: Request, user_id: int ,file: UploadFile
         ocr_object = await NLPDataController.create_instance(request.app.db_client)
         invoice_model = await InvoiceModel.create_instance(request.app.db_client)
 
-        user_id = user_id # Replace with actual user ID as needed
+        
         img_path = await data_controller.save_uploaded_file(user_id, file)
         
         extracted_row = await ocr_object.extract_tabular_data(image_bytes, user_id=user_id)
