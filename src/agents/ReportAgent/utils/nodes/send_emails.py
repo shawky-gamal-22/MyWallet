@@ -1,47 +1,72 @@
 import json
 from ..tools import email_sender
 from stores.llm import GroqProvider
-from src.agents.ReportAgent.utils.ReportState import ReportState
+from agents.ReportAgent.utils.ReportState import ReportState
+import logging
 
 
 
 async def node_sending_email(state: ReportState):
 
     receiver = state.get('email','')
-    queries = state.get('query_result','')
-    user_question = state.get('question', '')
-    system = """You are an assistant that sends email to our users who asked a question about their last transactions in our application which interests in personal finance tracking.
+
+    message = """You are an assistant that sends email to our users who asked a question about their last transactions in our application which interests in personal finance tracking.
     \n
-    you will accept queries that is fetched from the database according the user question.
+    you will accept the user name and the user question and the formated report that a previous node created based on the user's question.
+    \n
     
+    user_question:{user_question}
+    \n
+    report_content: {report_content}
+    \n
+    user_name: {user_name}
+    \n
+
+
     
-    Use the  question and the queries to make an email to send to the user.
+    Use them to create a concise email that includes a subject and a body in HTML format. and the name of the receiver.
+    \n
+    and the company name is callend MyWallet.
+    \n
+    Your task is to create a JSON format for the following keys:
 
-    create a json format for the following content:
-    subject: str (make it clear and short)
-    body: HTML (make the body as human readable and in HTML format to use it in the sender).
+    title: email title that summarizes the report
 
-    """.format(user_question=user_question,queries=queries)
+    subject: email subject that grabs the user's attention
 
-    human = f"Question: {user_question}\n\n Queries: {queries}"
+    body: HTML format answer (make the body as human readable and in HTML format to use it in the sender).
 
-    messages = [
-        ("system", system),
-        ("human", human),
-    ]
+    """.format(user_question=state.get('question',''), report_content=state.get('report_content',''), user_name=state.get('user_name',''))
+
+    
+
+    
 
 
 
     instance = await GroqProvider.create_instance()
     llm = instance.client
-    content = await llm.invoke(messages)
+    # prefer async invocation
+    try:
+        contentt = await llm.ainvoke(message)
+        content_str = contentt.content if hasattr(contentt, 'content') else contentt
+    except Exception:
+        # fallback to sync invoke if async invocation is not available
+        contentt = llm.invoke(message)
+        content_str = contentt.content if hasattr(contentt, 'content') else contentt
 
-    parsed_output = json.loads(content.content)
+    try:
+        parsed_output = json.loads(content_str) if isinstance(content_str, str) else (content_str or {})
+    except Exception:
+        parsed_output = {}
 
-    body = parsed_output['body']
-    subject = parsed_output['subject']
+    body = parsed_output.get('body', '')
+    subject = parsed_output.get('subject', '')
+    title = parsed_output.get('title', '')
 
-    email_sender(receiver,subject,body)
+    email_sender(receiver,title,subject,body)
 
-    state['email_sent'] = True
+    state['email_sent'] = parsed_output
+    state['content'] = content_str
+    logging.getLogger(__name__).info(f"send_email node output length: {len(str(content_str))}")
     return state
