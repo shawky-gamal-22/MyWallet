@@ -3,6 +3,7 @@ from helpers.config import get_settings
 from stores.OCR import Pytesseract, MistralOCR
 from controllers import AgentController
 from .schemes import AgentRequest
+import logging
 
 data_router = APIRouter()
 
@@ -40,6 +41,26 @@ async def relevance(request: Request, user_id: int, agent_req:AgentRequest):
     result = await agent_controller.AgentInvoke(question= agent_req.question, 
                                                 user_id= user_id, 
                                                 engine = request.app.db_engine,
-                                                db_clinet = request.app.db_client)
+                                                db_client = request.app.db_client)
 
     return result 
+
+
+@data_router.post("/report/{user_id}")
+async def report(request: Request, user_id: int, agent_req:AgentRequest):
+    agent_controller = await AgentController.create_instance()
+
+    result = await agent_controller.ReportAgentInvoke(
+        question=agent_req.question,
+        user_id=user_id,
+        engine=request.app.db_engine,
+        db_client=request.app.db_client,
+    )
+
+    logging.getLogger(__name__).info(f"Report endpoint returned: {result}")
+    # Always return a structured JSON response
+    if result is None:
+        return {"status": "error", "message": "No result from ReportAgent"}
+    # if isinstance(result, dict) and result.get("error"):
+    #     return {"status": "error", "message": result.get("message", "unknown error")}
+    return {"status": "ok", "data": result}
