@@ -66,17 +66,17 @@ class SQLAgent:
     async def create_instance(cls):
         return cls()
 
-    async def invoking(self, question: str, user_id: int, engine, db_clinet):
+    async def invoking(self, question: str, user_id: int, engine: object, db_client: object):
         """Invoke the compiled agent with the provided question and user id.
 
         Parameters are ordered to match callers that use keyword args
         (question=..., user_id=...).
         """
         # Use the key name expected by the agent node `get_current_user` (it looks for 'user_id')
-        config = {"configurable": {"user_id": user_id, "engine": engine, "db_client": db_clinet}}
+        config2 = {"configurable": {"user_id": user_id, "engine": engine, "db_client": db_client}}
 
         # call the async agent invocation
-        result = await self.SQLAgent.ainvoke({"question": question}, config=config)
+        result = await self.SQLAgent.ainvoke({"question": question}, config=config2)
 
         # return the full result so callers can inspect (or change to specific field as needed)
         return result
