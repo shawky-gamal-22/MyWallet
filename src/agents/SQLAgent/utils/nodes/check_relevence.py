@@ -60,12 +60,12 @@ async def get_schema(engine):
 
 
 #node
-async def check_relevance(state: AgentState, config: RunnableConfig):
-    question = state['question']
+async def check_relevance(SqlState: AgentState, config: RunnableConfig):
+    question = SqlState['question']
     #question = "What is the last receipt for me?"
     engine = config['configurable'].get("engine", None)
     schema = await get_schema(engine)
-    state['schema'] = schema
+    SqlState['schema'] = schema
 
     system = """You are an assistant that determines whether a given question is related to the following database schema.
 
@@ -93,15 +93,15 @@ async def check_relevance(state: AgentState, config: RunnableConfig):
     relevance = llm.invoke(messages)
     parsed_output = json.loads(relevance.content)
 
-    state['relevance'] = parsed_output['relevance']
-    return state
+    SqlState['relevance'] = parsed_output['relevance']
+    return SqlState
 
 
 #router
 
-async def relevance_router(state: AgentState):
+async def relevance_router(SqlState: AgentState):
 
-    if state['relevance'].lower() =="relevant":
+    if SqlState['relevance'].lower() =="relevant":
         return "convert_to_sql"
     else:
         return "return_state"
