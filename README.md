@@ -22,6 +22,8 @@ The system extracts data from invoice images, stores them in a structured databa
 
 ✅ **Summaries**: Generate spending summaries (total invoices, total amount spent, categorized breakdown, and habits).
 
+✅ **MultiAgent System for Reporting**: Generate and sending emails to a user for his own question about his previous history.
+
  🔒 **Multi-user Ready**: Authentication with email & password, each user has isolated data.
 
  📈 **Future Extensions** (planned):
@@ -92,6 +94,7 @@ The system extracts data from invoice images, stores them in a structured databa
 | **Task Queue** | Celery |
 | **Message Broker** | Redis |
 | **Containerization** | Docker & Docker Compose |
+| **Agents** | LangChain & LangGraph |
 
 ---
 
@@ -112,7 +115,12 @@ The system extracts data from invoice images, stores them in a structured databa
 - ✅ **Income & Balance Tracking**  
   - Add support for multiple **income sources** (salary, freelance, etc.).  
   - Implement **current balance calculation** = total income − total expenses.  
-  - Keep a **historical balance record** for financial trend tracking. 
+  - Keep a **historical balance record** for financial trend tracking.
+    
+- ✅ **MultiAgent System**  
+  - SQLAgent takes user question and transform it to sql query and run it in the database and return the raw data.
+  - Report agent that take the user question and the raw data and genrate a report for the user deponding on his tools.
+  - Sending email to the user gamil, stored in our database
 
 
 ## 🚀 Roadmap(Future Work)
